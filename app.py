@@ -97,7 +97,7 @@ def extract_voucher_data(text):
     }
 
     Instructions:
-    - For confirmation_number: ONLY extract if you find explicit terms like "Hotel Confirmation Number", "HCN", "Hotel Confirmation", "Confirmation Code", or "Hotel Reference Number". If you only find booking IDs, reference numbers, or other generic IDs (like "REZ68272DD2"), use "To be confirmed" instead
+    - For confirmation_number: ONLY extract if you find explicit terms like "Hotel Confirmation Number", "Hotel Conf Number", "HCN", "Hotel Confirmation", "Confirmation Code", or "Hotel Reference Number". If you only find booking IDs, reference numbers, or other generic IDs (like "REZ68272DD2"), use "To be confirmed" instead
     - Use "Bed type assigned at check-in" for bed_type if not specified
     - For breakfast_included, use "Yes", "No", or "Not specified"
     - Leave hotel_address and hotel_contact blank if not in document
