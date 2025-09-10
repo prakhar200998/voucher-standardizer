@@ -15,13 +15,17 @@ import re
 # Load environment variables
 load_dotenv()
 
-# Set up OpenAI client - try Streamlit secrets first, then environment
-try:
-    api_key = st.secrets["OPENAI_API_KEY"]
-except:
-    api_key = os.getenv('OPENAI_API_KEY')
-
-client = openai.OpenAI(api_key=api_key)
+def get_openai_client():
+    """Get OpenAI client with API key from secrets or environment"""
+    try:
+        api_key = st.secrets["OPENAI_API_KEY"]
+    except:
+        api_key = os.getenv('OPENAI_API_KEY')
+    
+    if not api_key:
+        return None, None
+    
+    return openai.OpenAI(api_key=api_key), api_key
 
 def extract_text_from_pdf(pdf_file):
     """Extract text from PDF using pdfplumber first, then OCR as fallback"""
@@ -57,7 +61,8 @@ def extract_text_from_pdf(pdf_file):
 def extract_voucher_data(text):
     """Use OpenAI to extract structured data from voucher text"""
     
-    if not api_key:
+    client, api_key = get_openai_client()
+    if not client:
         st.error("OpenAI API key not found. Please check your configuration.")
         return None
     
@@ -286,6 +291,7 @@ def main():
     st.sidebar.header("System Status")
     
     # Check API key
+    client, api_key = get_openai_client()
     api_key_status = "✅ Ready" if api_key else "❌ Missing"
     st.sidebar.write(f"AI Extraction: {api_key_status}")
     
