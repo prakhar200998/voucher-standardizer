@@ -1,0 +1,28 @@
+# Environment files
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Streamlit secrets (don't commit the actual secrets)
+.streamlit/secrets.toml
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+temp/

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  /* Print page box */
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+
+  /* Typography */
+  html, body {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 12px;
+    line-height: 1.35;
+    color: #000;
+  }
+  h1, h2 {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    margin: 0 0 10px 0;
+    font-weight: bold;
+  }
+  h1 { font-size: 18px; }
+  h2 { font-size: 14px; font-weight: bold; }
+
+  /* Layout containers */
+  .container { max-width: 180mm; margin: 0 auto; }
+  .header {
+    text-align: left;
+    margin-bottom: 14px;
+  }
+  .logo { max-height: 60px; width: auto; object-fit: contain; }
+
+  /* Two-column info grid */
+  .summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+    margin-bottom: 14px;
+  }
+
+  /* Label/value pairs as a mini-grid (stable, no overlap) */
+  .kv {
+    display: grid;
+    grid-template-columns: 34mm 1fr; /* fixed label column */
+    gap: 4px 8px;
+    row-gap: 6px;
+  }
+  .label { font-weight: bold; }
+  .value {
+    min-width: 0;
+    overflow-wrap: anywhere; /* long strings wrap */
+    word-break: break-word;
+    hyphens: auto;
+  }
+  .value-highlight {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+    font-weight: bold; /* Bold for important values */
+  }
+
+  /* Table */
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    table-layout: fixed; 
+    margin-top: 8px;
+  }
+  thead { 
+    background: #f4f4f4;
+    display: table-header-group; /* repeat header on page break */
+  }
+  th, td {
+    border: 1px solid #222;
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    font-weight: bold;
+  }
+  .bold-cell {
+    font-weight: bold;
+  }
+  /* Stable column widths */
+  colgroup col:nth-child(1){ width: 26%; }
+  colgroup col:nth-child(2){ width: 18%; }
+  colgroup col:nth-child(3){ width: 14%; }
+  colgroup col:nth-child(4){ width: 28%; }
+  colgroup col:nth-child(5){ width: 7%; }
+  colgroup col:nth-child(6){ width: 7%; }
+
+  /* Prevent awkward row splits */
+  tr, th, td { break-inside: avoid; }
+
+  /* Sections */
+  .section { margin-top: 14px; }
+  .muted { color: #555; }
+
+  /* Lists (avoid blank bullets) */
+  ul { margin: 8px 0 0 18px; padding: 0; }
+  li { margin-bottom: 4px; }
+  /* If some items are empty strings, they won't render due to Jinja guards below */
+
+  /* Footer */
+  .footer {
+    margin-top: 18px;
+    font-size: 11px;
+    text-align: center;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Header with logo -->
+  {% if logo_path %}
+  <div class="header">
+    <img src="{{ logo_path }}" alt="Company Logo" class="logo">
+  </div>
+  {% endif %}
+
+  <!-- Two-column booking summary -->
+  <div class="summary">
+    <!-- Left column -->
+    <div class="kv">
+      <div class="label">Hotel:</div><div class="value-highlight">{{ hotel_name or '—' }}</div>
+      <div class="label">Address:</div><div class="value">{{ hotel_address or '—' }}</div>
+      <div class="label">Contact:</div><div class="value">{{ hotel_contact or '—' }}</div>
+      <div class="label">Confirmation:</div><div class="value-highlight">{{ confirmation_number or 'TBC' }}</div>
+      <div class="label">Location:</div><div class="value">{{ city or '—' }}{% if country %}, {{ country }}{% endif %}</div>
+    </div>
+
+    <!-- Right column -->
+    <div class="kv">
+      <div class="label">Lead Guest:</div><div class="value-highlight">{{ lead_guest_name or '—' }}</div>
+      <div class="label">Nationality:</div><div class="value">{{ guest_nationality or '—' }}</div>
+      <div class="label">Total Guests:</div><div class="value">{{ num_guests or '—' }}</div>
+      <div class="label">Check-in:</div><div class="value-highlight">{{ check_in_date or '—' }}</div>
+      <div class="label">Check-out:</div><div class="value-highlight">{{ check_out_date or '—' }}</div>
+      <div class="label">Nights:</div><div class="value-highlight">{{ num_nights or '—' }}</div>
+    </div>
+  </div>
+
+  <!-- Room table -->
+  <div class="section">
+    <h2>Room Details</h2>
+    <table>
+      <colgroup>
+        <col><col><col><col><col><col>
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Room Category</th>
+          <th>Bed Type</th>
+          <th>Breakfast</th>
+          <th>Guest Name(s)</th>
+          <th>Adults</th>
+          <th>Children</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for room in rooms %}
+        <tr>
+          <td class="bold-cell">{{ room.room_category or '—' }}</td>
+          <td>{{ room.bed_type or 'Bed type assigned at check-in' }}</td>
+          <td>{{ room.breakfast_included or 'Unknown' }}</td>
+          <td class="bold-cell">{{ (room.guest_names|join(', ')) if room.guest_names else '—' }}</td>
+          <td>{{ room.adults if room.adults is not none else '—' }}</td>
+          <td>{{ room.children if room.children is not none else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Special Requests -->
+  {% if special_requests %}
+  <div class="section">
+    <h2>Special Requests</h2>
+    <p>{{ special_requests }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Additional Information (render only non-empty items) -->
+  {% if additional_information and additional_information|length > 0 %}
+  {% set clean_info = additional_information | select('string') | map('trim') | reject('equalto','') | list %}
+  {% if clean_info|length > 0 %}
+  <div class="section">
+    <h2>Additional Information</h2>
+    <ul>
+      {% for item in clean_info %}
+      <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% endif %}
+
+  <!-- CR Holidays block -->
+  <div class="section">
+    <h2>CR Holidays Contact</h2>
+    <div class="kv">
+      <div class="label">Email:</div><div class="value-highlight">jay@crholidays.com</div>
+      <div class="label">Phone:</div><div class="value-highlight">+91-8291604539</div>
+      <div class="label">Address:</div><div class="value">705/706, 1st Floor, 'A' Block, Trade World E-Wing, Kamala City, Mumbai</div>
+    </div>
+  </div>
+
+  <!-- Terms -->
+  <div class="section">
+    <h2>Terms &amp; Conditions</h2>
+    <p class="muted">This voucher is valid only with confirmation. Please carry valid ID proof at check-in.</p>
+  </div>
+
+  <div class="footer">
+    Generated by CR Holidays Voucher Standardizer
+  </div>
+</div>
+</body>
+</html>
